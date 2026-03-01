@@ -1,153 +1,132 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Flappy Bird Upgraded</title>
+<title>Flappy Bird</title>
 <style>
     body {
         margin: 0;
         overflow: hidden;
-        background: #4ec0ca;
+        background: skyblue;
     }
     canvas {
         display: block;
         margin: auto;
-        background: url("https://i.imgur.com/O7B6fFv.png");
-        background-size: cover;
-        image-rendering: pixelated;
+        background: #70c5ce;
     }
 </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="350" height="500"></canvas>
+
+<canvas id="gameCanvas" width="360" height="520"></canvas>
 
 <script>
+// Canvas setup
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// Load images
+// Images (GitHub-safe links)
 const birdImg = new Image();
-birdImg.src = "https://i.imgur.com/sjv4JqP.png";
+birdImg.src = "https://raw.githubusercontent.com/CodeExplainedRepo/FlappyBird-JavaScript/master/images/bird.png";
 
-const pipeTopImg = new Image();
-pipeTopImg.src = "https://i.imgur.com/5R3jlW9.png";
+const bgImg = new Image();
+bgImg.src = "https://raw.githubusercontent.com/CodeExplainedRepo/FlappyBird-JavaScript/master/images/bg.png";
 
-const pipeBottomImg = new Image();
-pipeBottomImg.src = "https://i.imgur.com/0ugH3RB.png";
+const fgImg = new Image();
+fgImg.src = "https://raw.githubusercontent.com/CodeExplainedRepo/FlappyBird-JavaScript/master/images/fg.png";
 
-// Load sound
-const flapSound = new Audio("https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum_hit.ogg");
+const pipeNorthImg = new Image();
+pipeNorthImg.src = "https://raw.githubusercontent.com/CodeExplainedRepo/FlappyBird-JavaScript/master/images/pipeNorth.png";
 
-// Bird
-let bird = {
-    x: 50,
-    y: 200,
-    width: 34,
-    height: 24,
-    gravity: 0.35,
-    lift: -7,
-    velocity: 0
+const pipeSouthImg = new Image();
+pipeSouthImg.src = "https://raw.githubusercontent.com/CodeExplainedRepo/FlappyBird-JavaScript/master/images/pipeSouth.png";
+
+// Sounds
+const flySound = new Audio("https://raw.githubusercontent.com/CodeExplainedRepo/FlappyBird-JavaScript/master/sounds/fly.mp3");
+const scoreSound = new Audio("https://raw.githubusercontent.com/CodeExplainedRepo/FlappyBird-JavaScript/master/sounds/score.mp3");
+
+// Bird physics
+let birdX = 50;
+let birdY = 150;
+let gravity = 1.3;
+
+// Pipes array
+let pipes = [];
+pipes[0] = {
+    x: canvas.width,
+    y: 0
 };
 
-// Pipes
-let pipes = [];
-let gap = 130;
-let pipeWidth = 52;
-let frame = 0;
-let score = 0;
-let gameOver = false;
-
-// Controls
-document.addEventListener("keydown", () => jump());
-document.addEventListener("mousedown", () => jump());
-function jump() {
-    bird.velocity = bird.lift;
-    flapSound.play();
-}
-
-// Spawn pipes
-function createPipes() {
-    if (frame % 90 === 0) {
-        let topHeight = Math.random() * (canvas.height - gap - 80);
-        pipes.push({
-            x: canvas.width,
-            top: topHeight,
-            bottom: topHeight + gap
-        });
-    }
-}
-
-// Draw pipes
-function drawPipes() {
-    pipes.forEach(pipe => {
-        ctx.drawImage(pipeTopImg, pipe.x, pipe.top - pipeTopImg.height);
-        ctx.drawImage(pipeBottomImg, pipe.x, pipe.bottom);
-    });
-}
-
-// Update pipes
-function updatePipes() {
-    pipes.forEach(pipe => {
-        pipe.x -= 2;
-
-        if (pipe.x + pipeWidth === bird.x) score++;
-
-        if (
-            bird.x < pipe.x + pipeWidth &&
-            bird.x + bird.width > pipe.x &&
-            (bird.y < pipe.top || bird.y + bird.height > pipe.bottom)
-        ) {
-            gameOver = true;
-        }
-    });
-
-    pipes = pipes.filter(p => p.x + pipeWidth > 0);
-}
-
-// Draw bird
-function drawBird() {
-    ctx.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
-}
-
-// Update bird
-function updateBird() {
-    bird.velocity += bird.gravity;
-    bird.y += bird.velocity;
-
-    if (bird.y + bird.height >= canvas.height || bird.y <= 0) gameOver = true;
-}
+// Gap size
+let gap = 140;
 
 // Score
-function drawScore() {
-    ctx.fillStyle = "white";
-    ctx.font = "24px Arial";
-    ctx.fillText("Score: " + score, 10, 30);
+let score = 0;
+
+// Controls
+document.addEventListener("keydown", jump);
+document.addEventListener("mousedown", jump);
+
+function jump() {
+    birdY -= 25;
+    flySound.play();
 }
 
-// Main loop
-function loop() {
-    if (gameOver) {
-        ctx.fillStyle = "black";
-        ctx.font = "40px Arial";
-        ctx.fillText("GAME OVER", 70, 250);
-        ctx.font = "28px Arial";
-        ctx.fillText("Score: " + score, 120, 290);
-        return;
+// Game Loop
+function draw() {
+    ctx.drawImage(bgImg, 0, 0);
+
+    for (let i = 0; i < pipes.length; i++) {
+        let constant = pipeNorthImg.height + gap;
+
+        ctx.drawImage(pipeNorthImg, pipes[i].x, pipes[i].y);
+        ctx.drawImage(pipeSouthImg, pipes[i].x, pipes[i].y + constant);
+
+        pipes[i].x--;
+
+        if (pipes[i].x === 100) {
+            pipes.push({
+                x: canvas.width,
+                y: Math.floor(Math.random() * pipeNorthImg.height) - pipeNorthImg.height
+            });
+        }
+
+        // Collision detection
+        if (
+            birdX + birdImg.width >= pipes[i].x &&
+            birdX <= pipes[i].x + pipeNorthImg.width &&
+            (birdY <= pipes[i].y + pipeNorthImg.height ||
+            birdY + birdImg.height >= pipes[i].y + constant)
+        ) {
+            location.reload(); // Restart game
+        }
+
+        // Score
+        if (pipes[i].x === 0) {
+            score++;
+            scoreSound.play();
+        }
     }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(fgImg, 0, canvas.height - fgImg.height);
+    ctx.drawImage(birdImg, birdX, birdY);
 
-    createPipes();
-    drawPipes();
-    updatePipes();
-    drawBird();
-    updateBird();
-    drawScore();
+    birdY += gravity;
 
-    frame++;
-    requestAnimationFrame(loop);
+    // Floor collision
+    if (birdY + birdImg.height >= canvas.height - fgImg.height) {
+        location.reload();
+    }
+
+    // Score display
+    ctx.fillStyle = "#fff";
+    ctx.font = "25px Arial";
+    ctx.fillText("Score: " + score, 10, canvas.height - 20);
+
+    requestAnimationFrame(draw);
 }
 
-loop();
+pipeSouthImg.onload = draw;
 </script>
+
 </body>
 </html>
