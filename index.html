@@ -1,30 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Flappy Bird</title>
+<title>Play Flappy Bird Game Online</title>
+
+<!-- SEO -->
+<meta name="description" content="Play the Flappy Bird browser game online for free. Smooth gameplay, simple controls, and fun challenges. Made by urkirt.">
+<meta name="keywords" content="flappy bird game, play flappy bird online, free flappy bird, flappy bird browser game, flappy bird remake">
+<meta name="author" content="urkirt">
+
 <style>
     body {
         margin: 0;
         overflow: hidden;
         background: skyblue;
+        font-family: Arial, sans-serif;
+    }
+    h1, p {
+        text-align: center;
+        margin: 10px;
+        color: white;
+        text-shadow: 0px 0px 5px black;
     }
     canvas {
         display: block;
         margin: auto;
-        background: #70c5ce;
     }
 </style>
 </head>
+
 <body>
+
+<h1>Play Flappy Bird Game Online</h1>
+<p>A simple, fun, smooth Flappy Bird game you can play for free. Created by urkirt.</p>
 
 <canvas id="gameCanvas" width="360" height="520"></canvas>
 
 <script>
-// Canvas setup
+// Canvas
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// Images (GitHub-safe links)
+// Load images (GitHub-safe links)
 const birdImg = new Image();
 birdImg.src = "https://raw.githubusercontent.com/CodeExplainedRepo/FlappyBird-JavaScript/master/images/bird.png";
 
@@ -49,14 +65,11 @@ let birdX = 50;
 let birdY = 150;
 let gravity = 1.3;
 
-// Pipes array
+// Pipes
 let pipes = [];
-pipes[0] = {
-    x: canvas.width,
-    y: 0
-};
+pipes[0] = { x: canvas.width, y: 0 };
 
-// Gap size
+// Gap
 let gap = 140;
 
 // Score
@@ -71,7 +84,7 @@ function jump() {
     flySound.play();
 }
 
-// Game Loop
+// Game loop
 function draw() {
     ctx.drawImage(bgImg, 0, 0);
 
@@ -90,12 +103,12 @@ function draw() {
             });
         }
 
-        // Collision detection
+        // Collision
         if (
             birdX + birdImg.width >= pipes[i].x &&
             birdX <= pipes[i].x + pipeNorthImg.width &&
             (birdY <= pipes[i].y + pipeNorthImg.height ||
-            birdY + birdImg.height >= pipes[i].y + constant)
+             birdY + birdImg.height >= pipes[i].y + constant)
         ) {
             location.reload(); // Restart game
         }
@@ -112,12 +125,11 @@ function draw() {
 
     birdY += gravity;
 
-    // Floor collision
     if (birdY + birdImg.height >= canvas.height - fgImg.height) {
         location.reload();
     }
 
-    // Score display
+    // Score text
     ctx.fillStyle = "#fff";
     ctx.font = "25px Arial";
     ctx.fillText("Score: " + score, 10, canvas.height - 20);
